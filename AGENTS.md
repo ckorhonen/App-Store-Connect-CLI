@@ -224,3 +224,17 @@ Detailed guidance on specific topics (only read when needed):
 - **Git workflow, CLI structure, adding features**: `docs/CONTRIBUTING.md`
 - **API quirks (analytics, finance, sandbox)**: `docs/API_NOTES.md`
 - **Development setup, PRs**: `CONTRIBUTING.md` (root)
+
+## Repository map and setup clarification
+
+`cmd/` and `internal/cli/` contain the CLI and command registry; `internal/` holds supporting services, `docs/openapi/` holds offline API references, and `apps/studio/` has a separate frontend toolchain. Keep all existing help-first, TDD, auth-isolation, generated-doc, architecture, and review rules above.
+
+`go.mod` requires Go 1.26.0 (the contribution guide says 1.26+). Use `make deps` for Go modules and `make build` for the binary. `make tools` installs the pinned lint tooling; `make lint` can fall back to `go vet`, so report which actually ran. Preserve the required `make format`, `make check-command-docs`, `make lint`, and `ASC_BYPASS_KEYCHAIN=1 make test` gates before opening/updating/merging a PR, and the full keychain-bypassed test requirement before committing. The contribution checklist also calls for `make build` and `./asc --help`. Instruction-only preparation does not waive those publication gates; report any blocked prerequisite instead of claiming readiness. CI uses short Go tests for PRs and full tests on the main branch; a short pass is not a full-suite pass. `make check-docs` includes additional repository/website checks.
+
+For Studio frontend changes, inspect its package and workflow separately; CI uses Node 22, `npm ci`, `npm test -- --run`, and `npm run build` in `apps/studio/frontend/`. Go/CLI verification does not cover that browser UI. API calls and release mutations require the existing authorization and explicit app scope; offline help/docs inspection and isolated tests must not read the user's Keychain.
+
+## Completing work
+
+Carry the authorized change through the relevant checks and repair failures it causes. Make routine, reversible implementation choices using existing patterns; ask only when missing information, a material product decision, or an authorization boundary prevents the next step. Existing authorization remains valid within its scope. If blocked, name the exact action and missing prerequisite, retain concise evidence, and continue independent work.
+
+Choose verification proportional to the change. For instructions or prose, inspect changed paths, links, and local instruction precedence and run `git diff --check -- <changed-paths>`; these preparation checks do not replace the explicit pre-commit and PR gates above. For behavior changes, exercise the affected behavior and applicable checks below, then broaden only for failures or unresolved risk. Report files changed, checks actually run and their results, commands only inspected, and remaining limitations. A build or source inspection alone does not prove runtime behavior. Continue through already-authorized follow-through; stop at explicit review checkpoints or boundaries requiring new authorization.
